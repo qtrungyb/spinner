@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vòng quay may mắn</title>
+  <style>
+    /* Flat Design Reset */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', sans-serif;
+      background-color: #f5f7fa;
+      color: #2d3748;
+      line-height: 1.6;
+      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    h1 {
+      font-size: 2rem;
+      font-weight: 600;
+      color: #2b6cb0;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+    
+    /* Input Section */
+    .input-section {
+      width: 100%;
+      max-width: 400px;
+      margin-bottom: 2rem;
+    }
+    
+    .add-form {
+      display: flex;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    
+    .add-form input {
+      flex: 1;
+      padding: 12px 16px;
+      border: none;
+      font-size: 1rem;
+      outline: none;
+      background: white;
+    }
+    
+    .add-form button {
+      padding: 0 16px;
+      background: #4299e1;
+      color: white;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .add-form button:hover {
+      background: #3182ce;
+    }
+    
+    /* Wheel Section */
+    .wheel-section {
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    
+    .wheel-container {
+      position: relative;
+      width: 280px;
+      height: 280px;
+      margin: 0 auto 1rem;
+    }
+    
+    #wheelcanvas {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: white;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .pointer {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 12px solid transparent;
+      border-right: 12px solid transparent;
+      border-bottom: 18px solid #e53e3e;
+    }
+    
+    #spin-btn {
+      background: #4299e1;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    #spin-btn:hover {
+      background: #3182ce;
+      transform: translateY(-1px);
+    }
+    
+    #spin-btn:active {
+      transform: translateY(0);
+    }
+    
+    #spin-btn:disabled {
+      background: #a0aec0;
+      cursor: not-allowed;
+    }
+    
+    /* Teams Section */
+    .teams-container {
+      display: flex;
+      gap: 20px;
+      width: 100%;
+      max-width: 800px;
+      margin-bottom: 2rem;
+    }
+    
+    .team {
+      flex: 1;
+      min-width: 0;
+      background: white;
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .team h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #2b6cb0;
+      margin-bottom: 1rem;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #ebf8ff;
+      text-align: center;
+    }
+    
+    .members {
+      list-style: none;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    
+    .members li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      margin-bottom: 8px;
+      background: #ebf8ff;
+      border-radius: 6px;
+    }
+    
+    .members li.editing {
+      background: white;
+      padding: 8px;
+    }
+    
+    .members li input {
+      flex: 1;
+      padding: 6px 8px;
+      border: 1px solid #bee3f8;
+      border-radius: 4px;
+      font-size: 0.9rem;
+    }
+    
+    .member-actions {
+      display: flex;
+      gap: 8px;
+      margin-left: 10px;
+    }
+    
+    .member-actions button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 2px;
+    }
+    
+    .btn-edit {
+      color: #3182ce;
+    }
+    
+    .btn-delete {
+      color: #e53e3e;
+    }
+    
+    footer {
+      margin-top: auto;
+      font-size: 0.8rem;
+      color: #718096;
+      text-align: center;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .teams-container {
+        flex-direction: column;
+      }
+      
+      .team {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>VÒNG QUAY MAY MẮN</h1>
+
+  <div class="input-section">
+    <form id="add-person-form" class="add-form" autocomplete="off">
+      <input type="text" id="new-person-name" placeholder="Thêm tên cầu thủ..." required maxlength="30">
+      <button type="submit">Thêm</button>
+    </form>
+  </div>
+
+  <div class="wheel-section">
+    <div class="wheel-container">
+      <canvas id="wheelcanvas" width="280" height="280"></canvas>
+      <div class="pointer"></div>
+    </div>
+    <button id="spin-btn">Quay</button>
+  </div>
+
+  <div class="teams-container">
+    <div class="team" id="team-a">
+      <h2 id="team-a-name" contenteditable="true">ĐỘI 1</h2>
+      <ul class="members" id="team-a-list"></ul>
+    </div>
+
+    <div class="team" id="team-b">
+      <h2 id="team-b-name" contenteditable="true">ĐỘI 2</h2>
+      <ul class="members" id="team-b-list"></ul>
+    </div>
+  </div>
+
+  <footer>
+
+  </footer>
+
+  <script>
+    (() => {
+      let peoplePool = [];
+      let unassigned = [];
+      let teamA = [];
+      let teamB = [];
+      let nextTeamAssign = 0; // 0 for A, 1 for B
+
+      const teamAList = document.getElementById('team-a-list');
+      const teamBList = document.getElementById('team-b-list');
+      const addPersonForm = document.getElementById('add-person-form');
+      const newPersonInput = document.getElementById('new-person-name');
+      const spinBtn = document.getElementById('spin-btn');
+      const wheelCanvas = document.getElementById('wheelcanvas');
+      const ctx = wheelCanvas.getContext('2d');
+      const wheelRadius = wheelCanvas.width / 2;
+
+      const wheelColors = [
+        "#4299e1", "#48bb78", "#9f7aea", "#ed8936", "#f56565",
+        "#38b2ac", "#667eea", "#ed64a6", "#ecc94b", "#a0aec0"
+      ];
+
+      let spinning = false;
+      let currentRotation = 0;
+      let spinTime = 0;
+      let spinTimeTotal = 0;
+
+      // Add person handler
+      addPersonForm.addEventListener('submit', e => {
+        e.preventDefault();
+        let name = newPersonInput.value.trim();
+        if (name === "") return;
+        if (peoplePool.length >= 100) {
+          alert("Maximum 100 people allowed.");
+          return;
+        }
+        if (peoplePool.includes(name)) {
+          alert("This name already exists.");
+          return;
+        }
+        peoplePool.push(name);
+        unassigned.push(name);
+        newPersonInput.value = '';
+        renderTeams();
+        drawWheel(0);
+        spinBtn.disabled = false;
+      });
+
+      function drawWheel(rotateAngle = 0) {
+        if (unassigned.length === 0) {
+          ctx.clearRect(0, 0, wheelCanvas.width, wheelCanvas.height);
+          ctx.font = "16px 'Segoe UI'";
+          ctx.fillStyle = "#a0aec0";
+          ctx.textAlign = "center";
+          ctx.fillText("Thêm cầu thủ để bắt đầu", wheelRadius, wheelRadius);
+          return;
+        }
+
+        const arc = 2 * Math.PI / unassigned.length;
+
+        ctx.clearRect(0, 0, wheelCanvas.width, wheelCanvas.height);
+
+        for (let i = 0; i < unassigned.length; i++) {
+          const startAngle = i * arc + rotateAngle;
+          const endAngle = startAngle + arc;
+
+          ctx.beginPath();
+          ctx.moveTo(wheelRadius, wheelRadius);
+          ctx.arc(wheelRadius, wheelRadius, wheelRadius - 5, startAngle, endAngle, false);
+          ctx.closePath();
+          ctx.fillStyle = wheelColors[i % wheelColors.length];
+          ctx.fill();
+
+          ctx.save();
+          ctx.translate(wheelRadius, wheelRadius);
+          ctx.rotate(startAngle + arc / 2);
+          ctx.textAlign = "right";
+          ctx.fillStyle = "white";
+          ctx.font = "bold 14px 'Segoe UI'";
+          const text = unassigned[i].length > 18 ? unassigned[i].slice(0, 15) + "…" : unassigned[i];
+          ctx.fillText(text, wheelRadius - 20, 5);
+          ctx.restore();
+        }
+
+        ctx.beginPath();
+        ctx.arc(wheelRadius, wheelRadius, 8, 0, 2 * Math.PI);
+        ctx.fillStyle = "#f6ad55";
+        ctx.fill();
+      }
+
+      function createPersonListItem(person, team, idx) {
+        const li = document.createElement('li');
+        li.textContent = person;
+
+        const actions = document.createElement('div');
+        actions.className = 'member-actions';
+
+        const btnEdit = document.createElement('button');
+        btnEdit.className = 'btn-edit';
+        btnEdit.title = "Edit person";
+        btnEdit.innerHTML = "✏️";
+        btnEdit.addEventListener('click', () => {
+          if (spinning) return;
+          startEditingPerson(person, team, idx, li);
+        });
+
+        const btnDelete = document.createElement('button');
+        btnDelete.className = 'btn-delete';
+        btnDelete.title = "Delete person";
+        btnDelete.innerHTML = "🗑️";
+        btnDelete.addEventListener('click', () => {
+          if (spinning) return;
+          deletePerson(person);
+        });
+
+        actions.appendChild(btnEdit);
+        actions.appendChild(btnDelete);
+        li.appendChild(actions);
+
+        return li;
+      }
+
+      function renderTeams() {
+        teamAList.innerHTML = '';
+        teamBList.innerHTML = '';
+
+        teamA.forEach((person, idx) => {
+          teamAList.appendChild(createPersonListItem(person, 'A', idx));
+        });
+        teamB.forEach((person, idx) => {
+          teamBList.appendChild(createPersonListItem(person, 'B', idx));
+        });
+      }
+
+      function startEditingPerson(originalName, team, idx, li) {
+        li.classList.add('editing');
+        li.innerHTML = '';
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = originalName;
+        input.maxLength = 30;
+        li.appendChild(input);
+        input.focus();
+        input.select();
+
+        function saveEdit() {
+          const val = input.value.trim();
+          if (val.length === 0) {
+            alert("Name cannot be empty.");
+            renderTeams();
+            return;
+          }
+          if (val !== originalName && peoplePool.includes(val)) {
+            alert("Name already exists.");
+            renderTeams();
+            return;
+          }
+          updatePersonName(originalName, val);
+          renderTeams();
+          drawWheel(0);
+        }
+
+        input.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter') {
+            saveEdit();
+          } else if (e.key === 'Escape') {
+            renderTeams();
+          }
+        });
+        input.addEventListener('blur', saveEdit);
+      }
+
+      function updatePersonName(oldName, newName) {
+        for (let arr of [peoplePool, unassigned, teamA, teamB]) {
+          let ix = arr.indexOf(oldName);
+          if (ix !== -1) {
+            arr[ix] = newName;
+          }
+        }
+      }
+
+      function deletePerson(name) {
+        peoplePool = peoplePool.filter(p => p !== name);
+        unassigned = unassigned.filter(p => p !== name);
+        teamA = teamA.filter(p => p !== name);
+        teamB = teamB.filter(p => p !== name);
+        renderTeams();
+        drawWheel(0);
+        spinBtn.disabled = unassigned.length === 0;
+      }
+
+      function spin() {
+        if (spinning) return;
+        if (unassigned.length === 0) {
+          alert("No people left to assign. Please add more people.");
+          return;
+        }
+        spinning = true;
+        spinBtn.disabled = true;
+
+        spinTime = 0;
+        spinTimeTotal = 3000 + Math.random() * 3000;
+
+        spinAnimation();
+      }
+
+      function spinAnimation() {
+        spinTime += 30;
+        if (spinTime >= spinTimeTotal) {
+          finishSpin();
+          return;
+        }
+        const ease = easeOut(spinTime, 0, 0.5, spinTimeTotal);
+        currentRotation = (currentRotation + ease) % (2 * Math.PI);
+        drawWheel(currentRotation);
+        requestAnimationFrame(spinAnimation);
+      }
+
+      function easeOut(t, b, c, d) {
+        const ts = (t /= d) * t;
+        const tc = ts * t;
+        return b + c * (tc + -3 * ts + 3 * t);
+      }
+
+      function finishSpin() {
+        const normalizedRotation = (2 * Math.PI - (currentRotation + Math.PI / 2)) % (2 * Math.PI);
+        const arc = 2 * Math.PI / unassigned.length;
+        let index = Math.floor(normalizedRotation / arc);
+        if (index < 0) index = 0;
+        if (index >= unassigned.length) index = unassigned.length -1;
+
+        const chosenPerson = unassigned[index];
+
+        if (nextTeamAssign === 0) {
+          teamA.push(chosenPerson);
+        } else {
+          teamB.push(chosenPerson);
+        }
+        nextTeamAssign = 1 - nextTeamAssign;
+
+        unassigned.splice(index, 1);
+
+        renderTeams();
+        drawWheel(0);
+
+        spinning = false;
+        spinBtn.disabled = unassigned.length === 0;
+
+        if (unassigned.length === 0) {
+          alert(`All people have been assigned to teams! You can add more people.`);
+        }
+      }
+
+      // Team name editing support
+      const teamANameElem = document.getElementById('team-a-name');
+      const teamBNameElem = document.getElementById('team-b-name');
+
+      function sanitizeTeamName(name) {
+        return name.replace(/[\r\n\t]+/g, ' ').trim();
+      }
+
+      teamANameElem.addEventListener('input', e => {
+        teamANameElem.textContent = sanitizeTeamName(teamANameElem.textContent);
+      });
+      teamBNameElem.addEventListener('input', e => {
+        teamBNameElem.textContent = sanitizeTeamName(teamBNameElem.textContent);
+      });
+
+      // Initialize
+      renderTeams();
+      drawWheel(0);
+      spinBtn.disabled = true;
+
+      spinBtn.addEventListener('click', spin);
+    })();
+  </script>
+</body>
+</html>
